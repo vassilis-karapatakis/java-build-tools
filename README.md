@@ -6,6 +6,8 @@
 
 ![Snyk Container](https://github.com/vassilis-karapatakis/java-build-tools/workflows/Snyk%20Container/badge.svg)
 
+![Anchore Container Scan](https://github.com/vassilis-karapatakis/java-build-tools/workflows/Anchore%20Container%20Scan/badge.svg)
+
 ![Codacy Security Scan](https://github.com/vassilis-karapatakis/java-build-tools/workflows/Codacy%20Security%20Scan/badge.svg)
 
 Extend the [Apache Maven image](https://hub.docker.com/_/maven) with [Node.js](https://nodejs.org).
