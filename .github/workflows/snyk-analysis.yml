@@ -5,11 +5,13 @@ on:
     branches: [ master ]
     paths-ignore:
       - '**/trivy-analysis.yml'
+      - '**/anchore-analysis.yml'
       - '**/codacy-analysis.yml'
       - 'README.md'
   pull_request:
     paths-ignore:
       - '**/trivy-analysis.yml'
+      - '**/anchore-analysis.yml'
       - '**/codacy-analysis.yml'
       - 'README.md'
 
