@@ -6,12 +6,13 @@ on:
     paths-ignore:
       - '**/trivy-analysis.yml'
       - '**/snyk-analysis.yml'
+      - '**/anchore-analysis.yml'
       - 'README.md'
   pull_request:
-    branches: [ master ]
     paths-ignore:
       - '**/trivy-analysis.yml'
       - '**/snyk-analysis.yml'
+      - '**/anchore-analysis.yml'
       - 'README.md'
 
 jobs:
