@@ -1,4 +1,4 @@
-FROM maven:3.8.1-jdk-8-slim
+FROM maven:3.8.5-jdk-8-slim
 LABEL maintainer="Vassilis Karapatakis <vassilis.karapatakis@iteam.gr>"
 
 ###########
