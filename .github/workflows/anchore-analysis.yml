@@ -3,21 +3,15 @@ name: Anchore Container Scan
 on:
   push:
     branches: [ master ]
-    paths-ignore:
-      - '**/docker-publish.yml'
-      - '**/codacy-analysis.yml'
-      - '**/snyk-analysis.yml'
-      - '**/trivy-analysis.yml'
-      - 'README.md'
+    paths:
+      - 'Dockerfile'
+      - '**/anchore-analysis.yml'
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ "master" ]  
-    paths-ignore:
-      - '**/docker-publish.yml'
-      - '**/codacy-analysis.yml'
-      - '**/snyk-analysis.yml'
-      - '**/trivy-analysis.yml'
-      - 'README.md'
+    paths:
+      - 'Dockerfile'
+      - '**/anchore-analysis.yml'
 
 env:
   IMAGE_NAME: vkarapatakis/java-build-tools
