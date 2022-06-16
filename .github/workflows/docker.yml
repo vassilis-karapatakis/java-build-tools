@@ -2,12 +2,12 @@ name: Docker
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "main" ]
     paths:
       - 'Dockerfile'
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "master" ]  
+    branches: [ "master", "main" ]  
     paths:
       - 'Dockerfile'
   # Allows you to run this workflow manually from the Actions tab
@@ -30,8 +30,8 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v3
         
-#       - name: Docker Setup QEMU
-#         uses: docker/setup-qemu-action@v2
+      - name: Docker Setup QEMU
+        uses: docker/setup-qemu-action@v2
 
       - name: Setup Docker buildx
         uses: docker/setup-buildx-action@v2
@@ -43,36 +43,35 @@ jobs:
 #           username: ${{ secrets.DOCKERHUB_USERNAME }}
 #           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-#       # Extract metadata (tags, labels) for Docker
-#       - name: Extract Docker metadata
-#         id: meta
-#         uses: docker/metadata-action@v4
-#         with:
-#           images: ${{ env.IMAGE_NAME }}
-#           tags: |
-#             type=raw,value=${{ env.IMAGE_TAG }}
-#             type=raw,value=latest
-#             type=sha,format=long
+      # Extract metadata (tags, labels) for Docker
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ env.IMAGE_TAG }}
+            type=raw,value=latest
+            type=sha,format=long
 
-#       # Build and push Docker image with Buildx (don't push on PR)
-#       - name: Build and push Docker image
-#         uses: docker/build-push-action@v3
-#         with:
-#           context: .
-#           platforms: linux/amd64,linux/arm64/v8
+      # Build and push Docker image with Buildx (don't push on PR)
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64/v8
 #           push: ${{ github.event_name != 'pull_request' }}
-#           tags: ${{ steps.meta.outputs.tags }}
-#           labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          push: false
+          load: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
       # Codacy Analysis
       - name: Run Codacy Analysis CLI
         uses: codacy/codacy-analysis-cli-action@v4
+        continue-on-error: true
         with:
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          verbose: true
+#           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           output: codacy.sarif
           format: sarif
           # Adjust severity of non-security issues
@@ -84,8 +83,28 @@ jobs:
       # Upload the SARIF file generated in the previous step
       - name: Upload SARIF results file
         uses: github/codeql-action/upload-sarif@v2
+        continue-on-error: true
         with:
           sarif_file: codacy.sarif
+
+      # Aqua Security Trivy
+      - name: Run Trivy vulnerability scanner
+#         if: github.event_name == 'pull_request'
+        uses: aquasecurity/trivy-action@master
+        continue-on-error: true
+        with:
+#           image-ref: '${{ env.IMAGE_NAME }}:latest'
+          scan-type: 'fs'
+          ignore-unfixed: true
+          format: 'sarif'
+          output: 'trivy.sarif'
+#           severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        continue-on-error: true
+        with:
+          sarif_file: 'trivy.sarif'
 
       # Snyk
       - name: Run Snyk to check Docker image for vulnerabilities
@@ -94,36 +113,28 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          image: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          image: ${{ env.IMAGE_NAME }}:latest
           args: --file=Dockerfile
+          sarif: true
 
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v2
+        continue-on-error: true
         with:
           sarif_file: snyk.sarif
 
       # Anchore Container Scan
       - name: Run the Anchore scan action itself with GitHub Advanced Security code scanning integration enabled
         uses: anchore/scan-action@v3
+        continue-on-error: true
+        id: anchore-scan
         with:
-          image: "${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          acs-report-enable: true
+          image: '${{ env.IMAGE_NAME }}:latest'
           fail-build: false
+          acs-report-enable: true
 
       - name: Upload Anchore Scan Report
         uses: github/codeql-action/upload-sarif@v2
+        continue-on-error: true
         with:
-          sarif_file: results.sarif
-
-      # Aqua Security Trivy
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: '${{ env.IMAGE_NAME }}:${{ github.sha }}'
-          format: 'sarif'
-          output: 'trivy.sarif'
-
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: 'trivy.sarif'
+          sarif_file: ${{ steps.anchore-scan.outputs.sarif }}
