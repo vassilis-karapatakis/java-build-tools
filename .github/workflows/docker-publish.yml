@@ -3,8 +3,15 @@ name: Docker build and push
 on:
   push:
     branches: [ "master" ]
+    paths:
+      - 'Dockerfile'
+      - '**/docker-publish.yml'
   pull_request:
-    branches: [ "master" ]
+    # The branches below must be a subset of the branches above
+    branches: [ "master" ]  
+    paths:
+      - 'Dockerfile'
+      - '**/docker-publish.yml'
 
 env:
   IMAGE_NAME: vkarapatakis/java-build-tools
@@ -12,6 +19,9 @@ env:
 
 jobs:
   build:
+    permissions:
+      contents: read # for actions/checkout to fetch code
+
     runs-on: ubuntu-latest
 
     steps:
