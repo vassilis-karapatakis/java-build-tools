@@ -1,9 +1,9 @@
 version: 2
 updates:
-- package-ecosystem: docker
+- package-ecosystem: "docker"
   directory: "/"
   schedule:
-    interval: monthly
+    interval: "weekly"
     time: "03:00"
-    timezone: Europe/Athens
+    timezone: "Europe/Athens"
   open-pull-requests-limit: 10
