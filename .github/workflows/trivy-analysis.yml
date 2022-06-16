@@ -3,44 +3,45 @@ name: Code Scanning
 on:
   push:
     branches: [ master ]
-    paths-ignore:
-      - '**/snyk-analysis.yml'
-      - '**/anchore-analysis.yml'
-      - '**/codacy-analysis.yml'
-      - 'README.md'
+    paths:
+      - 'Dockerfile'
+      - '**/trivy-analysis.yml'
   pull_request:
-    paths-ignore:
-      - '**/snyk-analysis.yml'
-      - '**/anchore-analysis.yml'
-      - '**/codacy-analysis.yml'
-      - 'README.md'
+    # The branches below must be a subset of the branches above
+    branches: [ "master" ]  
+    paths:
+      - 'Dockerfile'
+      - '**/trivy-analysis.yml'
 
 env:
-  DOCKER_REPOSITORY: vkarapatakis
-  IMAGE_NAME: java-build-tools
+  IMAGE_NAME: vkarapatakis/java-build-tools
+
+permissions:
+  contents: read
 
 jobs:
   build:
-    name: Trivy Scan
+    permissions:
+      contents: read # for actions/checkout to fetch code
+      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Build an image from Dockerfile
-        run: |
-          docker build -t ${{ env.DOCKER_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} .
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag ${{ env.IMAGE_NAME }}:${{ github.sha }}
 
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: '${{ env.DOCKER_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}'
-          format: 'template'
-          template: '@/contrib/sarif.tpl'
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL,HIGH'
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: '${{ env.IMAGE_NAME }}:${{ github.sha }}'
+        format: 'template'
+        template: '@/contrib/sarif.tpl'
+        output: 'trivy-results.sarif'
+        severity: 'CRITICAL,HIGH'
 
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v1
-        with:
-          sarif_file: 'trivy-results.sarif'
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
