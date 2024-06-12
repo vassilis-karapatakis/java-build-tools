@@ -15,7 +15,7 @@ on:
 
 env:
   IMAGE_NAME: vkarapatakis/java-build-tools
-  IMAGE_TAG: 3.9.4-node18
+  IMAGE_TAG: 3.9.7-node18
 
 jobs:
   build:
