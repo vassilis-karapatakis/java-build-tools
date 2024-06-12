@@ -4,7 +4,7 @@ LABEL maintainer="Vassilis Karapatakis <vassilis.karapatakis@iteam.gr>"
 ##########
 # Node.js
 ##########
-ARG NODE_MAJOR=18
+ARG NODE_MAJOR=20
 
 RUN apt-get update \
     && apt-get install -y gnupg --no-install-recommends \
