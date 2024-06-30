@@ -1,4 +1,4 @@
-FROM maven:3.9.7-eclipse-temurin-11
+FROM maven:3.9-eclipse-temurin-8
 LABEL maintainer="Vassilis Karapatakis <vassilis.karapatakis@iteam.gr>"
 
 ##########
