@@ -1,10 +1,10 @@
-FROM maven:3.9.7-eclipse-temurin-11
+FROM maven:3.9.9-eclipse-temurin-17
 LABEL maintainer="Vassilis Karapatakis <vassilis.karapatakis@iteam.gr>"
 
 ##########
 # Node.js
 ##########
-ARG NODE_MAJOR=20
+ARG NODE_MAJOR=22
 
 RUN apt-get update \
     && apt-get install -y gnupg --no-install-recommends \
